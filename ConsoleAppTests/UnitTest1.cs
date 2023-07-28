@@ -1,7 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Net;
+using System.Net.Http;
+using System.Security.Policy;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace ConsoleAppTests
@@ -9,15 +12,19 @@ namespace ConsoleAppTests
     [TestClass]
     public class UnitTest1
     {
-        //public Listener {get; set;}
+        public HttpListener Listener {get; set;}
 
         [TestInitialize]
         public void Initialize()
         {
-            //new thread {
-            //  Listener = new HttpListener(8000)
-            //  thread.Sleep(1000)
-            //}
+            Task.Run(() => {
+                Listener = new HttpListener();
+                string url = "http://localhost:8000/";
+
+                Listener.Prefixes.Add(url);
+                Listener.Start();
+                Task.Delay(1000).Wait();
+            });
         }
 
 
@@ -25,7 +32,7 @@ namespace ConsoleAppTests
         public void TestMethod1()
         {
             //Arrange
-            //client = new HttpClient(8000)
+           // HttpClient client = new HttpClient();
             HttpListenerResponse res = null;
 
             //Act
@@ -35,12 +42,12 @@ namespace ConsoleAppTests
 
             //Assert
             Assert.AreEqual(
-                expected: res?.ContentType, 
-                "text/html"
+                actual: res?.ContentType, 
+                expected: "text/html"
             );
             Assert.AreEqual(
-                expected:res?.ContentEncoding,
-                Encoding.UTF8
+                actual: res?.ContentEncoding,
+                expected: Encoding.UTF8
                 );
             Assert.IsTrue(res?.ContentLength64 > 0);
         }
@@ -49,7 +56,7 @@ namespace ConsoleAppTests
         [TestCleanup] 
         public void Cleanup()
         {
-            //Listener.shutdown()
+            Listener.Stop();
         }
     }
 }
